@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Threading;
-using System.Windows.Forms;
 using NAppUpdate.Framework;
 using NAppUpdate.Framework.Common;
 using NAppUpdate.Framework.Tasks;
@@ -15,10 +14,10 @@ namespace NAppUpdate.Updater
 	{
 		private static ArgumentsParser _args;
 		private static Logger _logger;
-		private static ConsoleForm _console;
 
 		private static void Main()
 		{
+            Console.WriteLine("Updater here!");
 			//Debugger.Launch();
 			string tempFolder = string.Empty;
 			string logFile = string.Empty;
@@ -27,8 +26,8 @@ namespace NAppUpdate.Updater
 			_logger = UpdateManager.Instance.Logger;
 			_args.ParseCommandLineArgs();
 			if (_args.ShowConsole) {
-				_console = new ConsoleForm();
-				_console.Show();
+                //_console = new ConsoleForm();
+                //_console.Show();
 			}
 
 			Log("Starting to process cold updates...");
@@ -147,7 +146,8 @@ namespace NAppUpdate.Updater
 					Log("Removing backup folder");
 					if (Directory.Exists(backupFolder)) FileSystem.DeleteDirectory(backupFolder);
 				} else {
-					MessageBox.Show("Update Failed");
+                    Console.WriteLine("Update Failed");
+					//MessageBox.Show();
 					Log(Logger.SeverityLevel.Error, "Update failed");
 				}
 
@@ -179,16 +179,17 @@ namespace NAppUpdate.Updater
 
 				if (_args.ShowConsole) {
 					if (_args.Log) {
-						_console.WriteLine();
-						_console.WriteLine("Log file was saved to {0}", logFile);
-						_console.WriteLine();
+						Console.WriteLine();
+						Console.WriteLine("Log file was saved to {0}", logFile);
+						Console.WriteLine();
 					}
-					_console.WriteLine();
-					_console.WriteLine("Press any key or close this window to exit.");
-					_console.ReadKey();
+					Console.WriteLine();
+					Console.WriteLine("Press any key or close this window to exit.");
+					Console.ReadKey();
 				}
 				if (!string.IsNullOrEmpty(tempFolder)) SelfCleanUp(tempFolder);
-				Application.Exit();
+			    //return;
+				//Application.Exit();
 			}
 		}
 
@@ -220,9 +221,9 @@ namespace NAppUpdate.Updater
 			message = string.Format(message, args);
 
 			_logger.Log(severity, message);
-			if (_args.ShowConsole) _console.WriteLine(message);
+			if (_args.ShowConsole) Console.WriteLine(message);
 
-			Application.DoEvents();
+			//Application.DoEvents();
 		}
 
 		private static void Log(Exception ex)
@@ -230,16 +231,16 @@ namespace NAppUpdate.Updater
 			_logger.Log(ex);
 
 			if (_args.ShowConsole) {
-				_console.WriteLine("*********************************");
-				_console.WriteLine("   An error has occurred:");
-				_console.WriteLine("   " + ex);
-				_console.WriteLine("*********************************");
-
-				_console.WriteLine();
-				_console.WriteLine("The updater will close when you close this window.");
+				Console.WriteLine("*********************************");
+				Console.WriteLine("   An error has occurred:");
+				Console.WriteLine("   " + ex);
+				Console.WriteLine("*********************************");
+                
+				Console.WriteLine();
+				Console.WriteLine("The updater will close when you close this window.");
 			}
 
-			Application.DoEvents();
+			//Application.DoEvents();
 		}
 	}
 }
