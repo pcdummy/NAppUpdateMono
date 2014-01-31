@@ -1,20 +1,18 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Threading;
-using Microsoft.Win32.SafeHandles;
-using System.Collections.Generic;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Threading;
 using NAppUpdate.Framework.Common;
 using NAppUpdate.Framework.Tasks;
 
 namespace NAppUpdate.Framework.Utils
 {
     /// <summary>
-    /// Starts the cold update process by extracting the updater app from the library's resources,
-    /// passing it all the data it needs and terminating the current application
+    ///     Starts the cold update process by extracting the updater app from the library's resources,
+    ///     passing it all the data it needs and terminating the current application
     /// </summary>
     internal static class NauIpc
     {
@@ -29,139 +27,80 @@ namespace NAppUpdate.Framework.Utils
             public bool RelaunchApplication { get; set; }
         }
 
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern SafeFileHandle CreateNamedPipe(
-           String pipeName,
-           uint dwOpenMode,
-           uint dwPipeMode,
-           uint nMaxInstances,
-           uint nOutBufferSize,
-           uint nInBufferSize,
-           uint nDefaultTimeOut,
-           IntPtr lpSecurityAttributes);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern int ConnectNamedPipe(
-           SafeFileHandle hNamedPipe,
-           IntPtr lpOverlapped);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern SafeFileHandle CreateFile(
-           String pipeName,
-           uint dwDesiredAccess,
-           uint dwShareMode,
-           IntPtr lpSecurityAttributes,
-           uint dwCreationDisposition,
-           uint dwFlagsAndAttributes,
-           IntPtr hTemplate);
-
-        //private const uint DUPLEX = (0x00000003);
-        private const uint WRITE_ONLY = (0x00000002);
-        private const uint FILE_FLAG_OVERLAPPED = (0x40000000);
-
-        const uint GENERIC_READ = (0x80000000);
-        //static readonly uint GENERIC_WRITE = (0x40000000);
-        const uint OPEN_EXISTING = 3;
-
-        internal static string GetPipeName(string syncProcessName)
+        private static string GetAdditionalParamsFileName(string syncProcessName)
         {
-            return string.Format("\\\\.\\pipe\\{0}", syncProcessName);
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), syncProcessName);
         }
 
-        private class State
+        internal static void WriteDtoToFile(NauDto dto, string syncProcessName)
         {
-            public readonly EventWaitHandle eventWaitHandle;
-            public int result { get; set; }
-            public SafeFileHandle clientPipeHandle { get; set; }
-
-            public State()
+            using (var fileStream = new FileStream(GetAdditionalParamsFileName(syncProcessName), FileMode.Create))
             {
-                eventWaitHandle = new ManualResetEvent(false);
+                new BinaryFormatter().Serialize(fileStream, dto);
+                fileStream.Flush();
             }
         }
 
-        internal static uint BUFFER_SIZE = 4096;
-
-        public static Process LaunchProcessAndSendDto(NauDto dto, ProcessStartInfo processStartInfo, string syncProcessName)
+        public static Process LaunchProcessAndSendDto(NauDto dto, ProcessStartInfo processStartInfo,
+            string syncProcessName)
         {
             Process p;
-            State state = new State();
-
-            using (state.clientPipeHandle = CreateNamedPipe(
-                   GetPipeName(syncProcessName),
-                   WRITE_ONLY | FILE_FLAG_OVERLAPPED,
-                   0,
-                   1, // 1 max instance (only the updater utility is expected to connect)
-                   BUFFER_SIZE,
-                   BUFFER_SIZE,
-                   0,
-                   IntPtr.Zero))
-            {
-                //failed to create named pipe
-                if (state.clientPipeHandle.IsInvalid) return null;
-
-                try
-                {
-                    p = Process.Start(processStartInfo);
-                }
-                catch (Win32Exception)
-                {
-                    // Person denied UAC escallation
-                    return null;
-                }
-
-                ThreadPool.QueueUserWorkItem(ConnectPipe, state);
-                //A rather arbitary five seconds, perhaps better to be user configurable at some point?
-                state.eventWaitHandle.WaitOne(30000);
-
-                //failed to connect client pipe
-                if (state.result == 0) return null;
-                //client connection successfull
-                using (var fStream = new FileStream(state.clientPipeHandle, FileAccess.Write, (int)BUFFER_SIZE, true))
-                {
-                    new BinaryFormatter().Serialize(fStream, dto);
-                    fStream.Flush();
-                    fStream.Close();
-                }
-            }
-
-            return p;
-        }
-
-        internal static void ConnectPipe(object stateObject)
-        {
-            if (stateObject == null) return;
-            State state = (State)stateObject;
+            var paramsFileName = GetAdditionalParamsFileName(syncProcessName);
 
             try
             {
-                state.result = ConnectNamedPipe(state.clientPipeHandle, IntPtr.Zero);
+                WriteDtoToFile(dto, syncProcessName);
             }
-            catch { }
-            state.eventWaitHandle.Set(); // signal we're done
+            catch
+            {
+                if (File.Exists(paramsFileName))
+                    File.Delete(paramsFileName);
+                return null;
+            }
+
+            if (!File.Exists(paramsFileName))
+            {
+                Console.WriteLine("Writing params to temporary path failed");
+                return null;
+            }
+
+            try
+            {
+                p = Process.Start(processStartInfo);
+            }
+            catch (Win32Exception)
+            {
+                // Person denied UAC escallation
+                return null;
+            }
+
+            for (int i = 0; i < 15; i++)
+            {
+                if (!File.Exists(paramsFileName))
+                    return p;
+                Thread.Sleep(1000);
+            }
+
+            File.Delete(paramsFileName);
+            return null;
         }
 
 
         internal static object ReadDto(string syncProcessName)
         {
-            using (SafeFileHandle pipeHandle = CreateFile(
-                GetPipeName(syncProcessName),
-                GENERIC_READ,
-                0,
-                IntPtr.Zero,
-                OPEN_EXISTING,
-                FILE_FLAG_OVERLAPPED,
-                IntPtr.Zero))
+            var paramsFileName = GetAdditionalParamsFileName(syncProcessName);
+            if (!File.Exists(paramsFileName))
+                return null;
+
+            object result;
+            using (var fileStream = new FileStream(paramsFileName, FileMode.Open))
             {
-
-                if (pipeHandle.IsInvalid)
-                    return null;
-
-                using (var fStream = new FileStream(pipeHandle, FileAccess.Read, (int)BUFFER_SIZE, true))
-                {
-                    return new BinaryFormatter().Deserialize(fStream);
-                }
+                result = new BinaryFormatter().Deserialize(fileStream);
             }
+
+            File.Delete(paramsFileName);
+
+            return result;
         }
 
         internal static void ExtractUpdaterFromResource(string updaterPath, string hostExeName)
@@ -174,7 +113,7 @@ namespace NAppUpdate.Framework.Utils
                 writer.Write(Resources.updater);
 
             // Now copy the NAU DLL
-            var assemblyLocation = typeof(NauIpc).Assembly.Location;
+            var assemblyLocation = typeof (NauIpc).Assembly.Location;
             File.Copy(assemblyLocation, Path.Combine(updaterPath, "NAppUpdate.Framework.dll"), true);
 
             // And also all other referenced DLLs (opt-in only)
@@ -184,7 +123,7 @@ namespace NAppUpdate.Framework.Utils
 
             foreach (var dep in UpdateManager.Instance.Config.DependenciesForColdUpdate)
             {
-                string fullPath = Path.Combine(assemblyPath, dep);
+                var fullPath = Path.Combine(assemblyPath, dep);
                 if (!File.Exists(fullPath)) continue;
 
                 var dest = Path.Combine(updaterPath, dep);
