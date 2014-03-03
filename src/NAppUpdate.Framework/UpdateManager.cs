@@ -29,14 +29,27 @@ namespace NAppUpdate.Framework
 			ApplicationPath = Process.GetCurrentProcess().MainModule.FileName;
 			UpdateFeedReader = new NauXmlFeedReader();
 			Logger = new Logger();
-			Config = new NauConfigurations
-						{
-							TempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()),
-							UpdateProcessName = "NAppUpdateProcess",
-							UpdateExecutableName = "foo.exe", // Naming it updater.exe seem to trigger the UAC, and we don't want that
-						};
 
-			// Need to do this manually here because the BackupFolder property is protected using the static instance, which we are
+		    if (PlatformCheck.CurrentlyRunningInWindows())
+		    {
+		        Config = new NauConfigurations
+		        {
+		            TempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()),
+		            UpdateProcessName = "NAppUpdateProcess",
+		            UpdateExecutableName = "foo.exe", // Naming it updater.exe seem to trigger the UAC, and we don't want that
+		        };
+		    } 
+            else
+            {
+                Config = new NauConfigurations
+                {
+                    TempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()),
+                    UpdateProcessName = "NAppUpdateProcess",
+                    UpdateExecutableName = "foo", // Naming it updater.exe seem to trigger the UAC, and we don't want that
+                };
+		    }
+
+		    // Need to do this manually here because the BackupFolder property is protected using the static instance, which we are
 			// in the middle of creating
 			string backupPath = Path.Combine(Path.GetDirectoryName(ApplicationPath) ?? string.Empty, "Backup" + DateTime.Now.Ticks);
 			backupPath = backupPath.TrimEnd(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);

@@ -1,29 +1,48 @@
 ﻿using System.IO;
-using System.Security.Principal;
 using System.Security.AccessControl;
+using System.Security.Principal;
 
 namespace NAppUpdate.Framework.Utils
 {
     public static class PermissionsCheck
     {
-        private static readonly IdentityReferenceCollection groups = WindowsIdentity.GetCurrent().Groups;
-        private static readonly string sidCurrentUser = WindowsIdentity.GetCurrent().User.Value;
+        private static readonly IdentityReferenceCollection groups;
+        private static readonly string sidCurrentUser;
+
+        static PermissionsCheck()
+        {
+            if (PlatformCheck.CurrentlyRunningInWindows())
+                groups = WindowsIdentity.GetCurrent().Groups;
+            else
+                groups = new IdentityReferenceCollection();
+
+            if (PlatformCheck.CurrentlyRunningInWindows())
+                sidCurrentUser = WindowsIdentity.GetCurrent().User.Value;
+        }
 
         public static bool IsDirectory(string path)
         {
-			if (!Directory.Exists(path)) return false;
+            if (!Directory.Exists(path)) return false;
             FileAttributes attr = File.GetAttributes(path);
             return ((attr & FileAttributes.Directory) == FileAttributes.Directory);
         }
 
-        public static bool HaveWritePermissionsForFolder(string path) {
-            var folder = IsDirectory(path) ? path : Path.GetDirectoryName(path);
+        public static bool HaveWritePermissionsForFolder(string path)
+        {
+            if (!PlatformCheck.CurrentlyRunningInWindows())
+                return true;
+
+            string folder = IsDirectory(path) ? path : Path.GetDirectoryName(path);
             return HaveWritePermissionsForFileOrFolder(folder);
         }
 
         public static bool HaveWritePermissionsForFileOrFolder(string path)
         {
-            var rules = Directory.GetAccessControl(path).GetAccessRules(true, true, typeof(SecurityIdentifier));
+            if (!PlatformCheck.CurrentlyRunningInWindows())
+                return true;
+
+            AuthorizationRuleCollection rules = Directory.GetAccessControl(path)
+                .GetAccessRules(true, true, typeof(SecurityIdentifier));
 
             bool allowwrite = false, denywrite = false;
             foreach (FileSystemAccessRule rule in rules)
