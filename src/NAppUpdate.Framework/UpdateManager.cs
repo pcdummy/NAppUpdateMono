@@ -473,7 +473,7 @@ namespace NAppUpdate.Framework
 
 						var info = new ProcessStartInfo
 						           	{
-						           		UseShellExecute = true,
+						           		UseShellExecute = false,
 						           		WorkingDirectory = Environment.CurrentDirectory,
 						           		FileName = Path.Combine(Config.TempFolder, Instance.Config.UpdateExecutableName),
 						           		Arguments =

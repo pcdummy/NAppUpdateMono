@@ -156,7 +156,7 @@ namespace NAppUpdate.Updater
 					Log("Re-launching process {0} with working dir {1}", appPath, appDir);
 
 					var info = new ProcessStartInfo {
-						UseShellExecute = true,
+						UseShellExecute = false,
 						WorkingDirectory = appDir,
 						FileName = appPath,
 					};
@@ -199,6 +199,7 @@ namespace NAppUpdate.Updater
 			Log("Removing updater and temp folder... {0}", tempFolder);
 			try {
 				var info = new ProcessStartInfo {
+                    UseShellExecute = false,
 					Arguments = string.Format(@"/C ping 1.1.1.1 -n 1 -w 3000 > Nul & echo Y|del ""{0}\*.*"" & rmdir ""{0}""", tempFolder),
 					WindowStyle = ProcessWindowStyle.Hidden,
 					CreateNoWindow = true,
