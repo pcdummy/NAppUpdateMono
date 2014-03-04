@@ -32,9 +32,9 @@ namespace NAppUpdate.Framework.Utils
             return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), syncProcessName);
         }
 
-        internal static void WriteDtoToFile(NauDto dto, string syncProcessName)
+        internal static void WriteDtoToFile(NauDto dto, string fileName)
         {
-            using (var fileStream = new FileStream(GetAdditionalParamsFileName(syncProcessName), FileMode.Create))
+            using (var fileStream = new FileStream(fileName, FileMode.Create))
             {
                 new BinaryFormatter().Serialize(fileStream, dto);
                 fileStream.Flush();
@@ -49,7 +49,7 @@ namespace NAppUpdate.Framework.Utils
 
             try
             {
-                WriteDtoToFile(dto, syncProcessName);
+                WriteDtoToFile(dto, paramsFileName);
             }
             catch
             {
