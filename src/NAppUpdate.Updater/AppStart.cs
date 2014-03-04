@@ -45,26 +45,26 @@ namespace NAppUpdate.Updater
 					throw new ArgumentException("The command line needs to specify the mutex of the program to update.", "ar" + "gs");
 
 				Log("Update process name: '{0}'", syncProcessName);
+//TODO: I suppose this was done to load custom tasks, however there were some problems when loading an assembly which later was updated (msg: can't update because file is in use).
+//                // Load extra assemblies to the app domain, if present
+//                Log("Getting files in : '{0}'", workingDir);
+//                var availableAssemblies = FileSystem.GetFiles(workingDir, "*.exe|*.dll", SearchOption.TopDirectoryOnly);
+//                foreach (var assemblyPath in availableAssemblies) {
+//                    Log("Loading {0}", assemblyPath);
 
-				// Load extra assemblies to the app domain, if present
-                Log("Getting files in : '{0}'", workingDir);
-				var availableAssemblies = FileSystem.GetFiles(workingDir, "*.exe|*.dll", SearchOption.TopDirectoryOnly);
-				foreach (var assemblyPath in availableAssemblies) {
-					Log("Loading {0}", assemblyPath);
+//                    if (assemblyPath.Equals(Assembly.GetEntryAssembly().Location, StringComparison.InvariantCultureIgnoreCase) || assemblyPath.EndsWith("NAppUpdate.Framework.dll")) {
+//                        Log("\tSkipping (part of current execution)");
+//                        continue;
+//                    }
 
-					if (assemblyPath.Equals(Assembly.GetEntryAssembly().Location, StringComparison.InvariantCultureIgnoreCase) || assemblyPath.EndsWith("NAppUpdate.Framework.dll")) {
-						Log("\tSkipping (part of current execution)");
-						continue;
-					}
-
-					try {
-// ReSharper disable UnusedVariable
-						var assembly = Assembly.LoadFile(assemblyPath);
-// ReSharper restore UnusedVariable
-					} catch (BadImageFormatException ex) {
-						Log("\tSkipping due to an error: {0}", ex.Message);
-					}
-				}
+//                    try {
+//// ReSharper disable UnusedVariable
+//                        var assembly = Assembly.LoadFile(assemblyPath);
+//// ReSharper restore UnusedVariable
+//                    } catch (BadImageFormatException ex) {
+//                        Log("\tSkipping due to an error: {0}", ex.Message);
+//                    }
+//                }
 
 				// Connect to the named pipe and retrieve the updates list
 				var dto = NauIpc.ReadDto(syncProcessName) as NauIpc.NauDto;
