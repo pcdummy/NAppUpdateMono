@@ -14,7 +14,7 @@ namespace LinuxTest
     {
         static void Main(string[] args)
         {
-            //Console.WriteLine("v22");
+            //Console.WriteLine("v2");
             try
             {
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
@@ -24,7 +24,7 @@ namespace LinuxTest
                 // UpdateManager initialization
                 UpdateManager updManager = UpdateManager.Instance;
                 updManager.UpdateSource = new SimpleWebSource("http://dl.dropboxusercontent.com/u/XXX/SampleUpdateFeed.xml");
-                updManager.Config.TempFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "LinuxTest\\Updates");
+                updManager.Config.TempFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "LinuxTest");
                 // If you don't call this method, the updater.exe will continually attempt to connect the named pipe and get stuck.
                 // Therefore you should always implement this method call.
                 
