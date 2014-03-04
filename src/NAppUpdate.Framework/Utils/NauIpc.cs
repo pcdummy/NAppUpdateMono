@@ -108,9 +108,13 @@ namespace NAppUpdate.Framework.Utils
             if (!Directory.Exists(updaterPath))
                 Directory.CreateDirectory(updaterPath);
 
-            //store the updater temporarily in the designated folder            
-            using (var writer = new BinaryWriter(File.Open(Path.Combine(updaterPath, hostExeName), FileMode.Create)))
-                writer.Write(Resources.updater);
+            //store the updater temporarily in the designated folder
+            using (var updaterFile = File.Open(Path.Combine(updaterPath, hostExeName), FileMode.Create))
+            {
+                using (var writer = new BinaryWriter(updaterFile))
+                    writer.Write(Resources.updater);
+            }
+            
 
             // Now copy the NAU DLL
             var assemblyLocation = typeof (NauIpc).Assembly.Location;
