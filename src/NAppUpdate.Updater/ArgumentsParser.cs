@@ -54,13 +54,11 @@ namespace NAppUpdate.Updater
 				} else if (arg == "showconsole") {
 					this.ShowConsole = true;
 					this.HasArgs = true;
-				} else if (this.ProcessName == null) {
+				//} else if (this.ProcessName == null) { //first time we will assign file name instead of process name! In windows we don't care, but under linux this will do the difference.
+				} else {
                     // if we don't already have the processname set, assume this is it
                     this.ProcessName = args[i];
-                } else {
-					Console.WriteLine("Unrecognized arg '{0}'", arg);
-				}
-
+                }
 			}
 		}
 
