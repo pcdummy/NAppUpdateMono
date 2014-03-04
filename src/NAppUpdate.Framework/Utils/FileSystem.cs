@@ -76,5 +76,33 @@ namespace NAppUpdate.Framework.Utils
 			return false;
 		}
 
+        public static void MoveInplaceIfNeeded(string fileFrom, string fileTo, long bufferSize = 1024)
+        {
+            if (!File.Exists(fileTo))
+            {
+                File.Move(fileFrom, fileTo);
+                return;
+            }
+
+            var buffer = new byte[bufferSize];
+            using (var inStream = new FileStream(fileFrom, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                using (var outStream = new FileStream(fileTo, FileMode.Create, FileAccess.Write, FileShare.Write))
+                {
+                    while (inStream.Position < inStream.Length - buffer.Length)
+                    {
+                        inStream.Read(buffer, 0, buffer.Length);
+                        outStream.Write(buffer, 0, buffer.Length);
+                    }
+
+                    // Copy the remaining part.
+                    buffer = new byte[inStream.Length - inStream.Position];
+                    inStream.Read(buffer, 0, buffer.Length);
+                    outStream.Write(buffer, 0, buffer.Length);
+                }
+            }
+        }
+ 
+
 	}
 }

@@ -115,7 +115,7 @@ namespace NAppUpdate.Framework.Tasks
 				{
 				    StubbornlyDeleteDestinationFile();
 					
-					File.Move(_tempFile, _destinationFile);
+					FileSystem.MoveInplaceIfNeeded(_tempFile, _destinationFile);
 					_tempFile = null;
 				}
 				catch (Exception ex)
