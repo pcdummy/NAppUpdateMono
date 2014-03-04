@@ -66,7 +66,7 @@ namespace NAppUpdate.Framework.Utils
 
             try
             {
-                p = Process.Start(processStartInfo);
+                p = ExtendendStartProcess.Start(processStartInfo);
             }
             catch (Win32Exception)
             {

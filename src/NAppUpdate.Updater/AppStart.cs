@@ -206,7 +206,7 @@ namespace NAppUpdate.Updater
 					FileName = "cmd.exe"
 				};
 
-				Process.Start(info);
+                ExtendendStartProcess.Start(info);
 			} catch {
 				/* ignore exceptions thrown while trying to clean up */
 			}
