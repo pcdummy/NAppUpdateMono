@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading;
 using NAppUpdate.Framework;
 using NAppUpdate.Framework.Common;
 using NAppUpdate.Framework.Sources;
@@ -17,10 +18,7 @@ namespace LinuxTest
             try
             {
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-                Console.WriteLine("Starting! press enter to continue!");
-                var line = Console.ReadLine();
-                if(!string.IsNullOrEmpty(line))
-                    Debugger.Launch();
+                Console.WriteLine("Starting!");
                 //if (UpdateManager.Instance.State != UpdateManager.UpdateProcessState.Checked);
                 //    UpdateManager.Instance.CleanUp();
                 // UpdateManager initialization
@@ -47,8 +45,8 @@ namespace LinuxTest
                 Console.WriteLine(e);
                 Console.ReadLine();
             }
-            Console.WriteLine("exitting");
-            Console.ReadLine();
+            Console.WriteLine("Exitting after 5 seconds.");
+            Thread.Sleep(5 * 1000);
         }
 
         private static void DumpUpdateManagerState()
