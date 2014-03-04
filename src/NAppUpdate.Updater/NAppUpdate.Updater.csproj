@@ -130,7 +130,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>mkdir "$(SolutionDir)src\NAppUpdate.Framework\Updater"
+    <PostBuildEvent Condition=" '$(OS)' == 'Windows_NT'">mkdir "$(SolutionDir)src\NAppUpdate.Framework\Updater"
 copy /y "$(TargetDir)NAppUpdate.Updater.exe" "$(SolutionDir)src\NAppUpdate.Framework\Updater\Updater.exe"</PostBuildEvent>
   </PropertyGroup>
 </Project>
