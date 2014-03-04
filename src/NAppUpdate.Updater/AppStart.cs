@@ -184,8 +184,14 @@ namespace NAppUpdate.Updater
 						Console.WriteLine();
 					}
 					Console.WriteLine();
-					Console.WriteLine("Press any key or close this window to exit.");
-					Console.ReadKey();
+					Console.WriteLine("Exiting."); //Must not read console!
+                    //see: http://msdn.microsoft.com/en-us/library/system.console.aspx
+                    //Especially:
+                    //Console class members that work normally when the underlying stream is directed to a console might 
+                    //throw an exception if the stream is redirected, for example, to a file. Program your application to
+                    //catch System.IO.IOException exceptions if you redirect a standard stream. You can also use
+                    //the IsOutputRedirected, IsInputRedirected, and IsErrorRedirected properties to determine whether
+                    //a standard stream is redirected before performing an operation that throws an System.IO.IOException exception.
 				}
 				if (!string.IsNullOrEmpty(tempFolder)) SelfCleanUp(tempFolder);
 			    //return;
