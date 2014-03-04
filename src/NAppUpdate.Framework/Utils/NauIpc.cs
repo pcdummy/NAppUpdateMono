@@ -68,9 +68,10 @@ namespace NAppUpdate.Framework.Utils
             {
                 p = ExtendendStartProcess.Start(processStartInfo);
             }
-            catch (Win32Exception)
+            catch (Win32Exception e)
             {
                 // Person denied UAC escallation
+                Console.WriteLine("User denied UAC escallation? Error while launching process: {0}.", e);
                 return null;
             }
 
