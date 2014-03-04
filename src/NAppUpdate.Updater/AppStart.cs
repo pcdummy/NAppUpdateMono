@@ -222,7 +222,7 @@ namespace NAppUpdate.Updater
                     var info = new ProcessStartInfo
                     {
                         UseShellExecute = false,
-                        Arguments = string.Format(@"-c sleep 5s && rm -rf {0}", tempFolder),
+                        Arguments = string.Format(@"-c ""sleep 5s && rm -rf {0}""", tempFolder),
                         WindowStyle = ProcessWindowStyle.Hidden,
                         CreateNoWindow = true,
                         FileName = "bash"
