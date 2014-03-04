@@ -113,8 +113,8 @@ namespace NAppUpdate.Framework.Tasks
 
 				try
 				{
-					if (File.Exists(_destinationFile))
-						File.Delete(_destinationFile);
+				    StubbornlyDeleteDestinationFile();
+					
 					File.Move(_tempFile, _destinationFile);
 					_tempFile = null;
 				}
@@ -143,7 +143,31 @@ namespace NAppUpdate.Framework.Tasks
 			return TaskExecutionStatus.RequiresAppRestart;
 		}
 
-		public override bool Rollback()
+        /// <summary>
+        /// unfortunately some locking issues was meet under mono. This is creepy workaround.
+        /// </summary>
+	    private void StubbornlyDeleteDestinationFile()
+	    {
+	        for (int i = 0; i < 5; i++)
+	        {
+                try
+	            {
+	                if (File.Exists(_destinationFile))
+	                {
+	                    File.Delete(_destinationFile);
+                        UpdateManager.Instance.Logger.Log("Deleting {0} file succeeded.", _destinationFile);
+                        break;
+	                }
+	            }
+	            catch (Exception ex)
+	            {
+	                UpdateManager.Instance.Logger.Log("Cannot delete {0} file: {1}", _destinationFile, ex);
+                    Thread.Sleep(1500); //TODO: this probably should be moved to some kind of config/parameters
+	            }
+	        }
+	    }
+
+	    public override bool Rollback()
 		{
 			if (string.IsNullOrEmpty(_destinationFile))
 				return true;
