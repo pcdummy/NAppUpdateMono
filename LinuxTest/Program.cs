@@ -45,8 +45,10 @@ namespace LinuxTest
                 Console.WriteLine(e);
                 Console.ReadLine();
             }
-            Console.WriteLine("Exitting after 5 seconds.");
+            Console.WriteLine("Exiting after 5 seconds.");
             Thread.Sleep(5 * 1000);
+            Console.WriteLine("Return.");
+            Environment.Exit(0);
         }
 
         private static void DumpUpdateManagerState()
