@@ -5,6 +5,7 @@
 rm -rf ./../src/NAppUpdate.Updater/bin/Debug
 rm -rf ./../src/NAppUpdate.Framework/Updater/* # delete previous updater
 touch ./../src/NAppUpdate.Framework/Updater/updater.exe
+sleep 3s
 xbuild ./../NAppUpdate.sln /p:Configuration=Debug
 rm -rf ./../src/NAppUpdate.Framework/Updater/*
 cd ./../src/NAppUpdate.Updater/bin/Debug/
