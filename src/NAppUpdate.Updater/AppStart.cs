@@ -17,8 +17,6 @@ namespace NAppUpdate.Updater
 
 		private static void Main()
 		{
-            Console.WriteLine("Updater here!");
-			//Debugger.Launch();
 			string tempFolder = string.Empty;
 			string logFile = string.Empty;
 			_args = ArgumentsParser.Get();
@@ -30,9 +28,10 @@ namespace NAppUpdate.Updater
                 //_console.Show();
 			}
 
-			Log("Starting to process cold updates...");
+            Log("Starting to process cold updates...");
+            Log("Arguments parsed: {0}{1}.", Environment.NewLine, _args.DumpArgs());
 
-			var workingDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+			var workingDir = Directory.GetCurrentDirectory();
 			if (_args.Log) {
 				// Setup a temporary location for the log file, until we can get the DTO
 				logFile = Path.Combine(workingDir, @"NauUpdate.log");
@@ -48,6 +47,7 @@ namespace NAppUpdate.Updater
 				Log("Update process name: '{0}'", syncProcessName);
 
 				// Load extra assemblies to the app domain, if present
+                Log("Getting files in : '{0}'", workingDir);
 				var availableAssemblies = FileSystem.GetFiles(workingDir, "*.exe|*.dll", SearchOption.TopDirectoryOnly);
 				foreach (var assemblyPath in availableAssemblies) {
 					Log("Loading {0}", assemblyPath);
@@ -204,15 +204,32 @@ namespace NAppUpdate.Updater
 			// Delete the updater EXE and the temp folder
 			Log("Removing updater and temp folder... {0}", tempFolder);
 			try {
-				var info = new ProcessStartInfo {
-                    UseShellExecute = false,
-					Arguments = string.Format(@"/C ping 1.1.1.1 -n 1 -w 3000 > Nul & echo Y|del ""{0}\*.*"" & rmdir ""{0}""", tempFolder),
-					WindowStyle = ProcessWindowStyle.Hidden,
-					CreateNoWindow = true,
-					FileName = "cmd.exe"
-				};
+			    if (PlatformCheck.CurrentlyRunningInWindows())
+			    {
+                    var info = new ProcessStartInfo
+                    {
+                        UseShellExecute = false,
+                        Arguments = string.Format(@"/C ping 1.1.1.1 -n 1 -w 3000 > Nul & echo Y|del ""{0}\*.*"" & rmdir ""{0}""", tempFolder),
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        CreateNoWindow = true,
+                        FileName = "cmd.exe"
+                    };
 
-                ExtendendStartProcess.Start(info);
+                    ExtendendStartProcess.Start(info);
+			    }
+			    else
+			    {
+                    var info = new ProcessStartInfo
+                    {
+                        UseShellExecute = false,
+                        Arguments = string.Format(@"-c sleep 5s && rm -rf {0}", tempFolder),
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        CreateNoWindow = true,
+                        FileName = "bash"
+                    };
+
+                    Process.Start(info);
+			    }
 			} catch {
 				/* ignore exceptions thrown while trying to clean up */
 			}

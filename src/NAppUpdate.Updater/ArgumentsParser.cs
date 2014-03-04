@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Text.RegularExpressions;
 namespace NAppUpdate.Updater
 {
@@ -30,6 +31,17 @@ namespace NAppUpdate.Updater
         {
             Parse(Environment.GetCommandLineArgs());
         }
+
+	    public string DumpArgs()
+	    {
+	        var sb = new StringBuilder();
+            sb.AppendLine(string.Format("HasArgs: '{0}'", HasArgs));
+            sb.AppendLine(string.Format("ProcessName: '{0}'", ProcessName));
+            sb.AppendLine(string.Format("ShowConsole: '{0}'", ShowConsole));
+            sb.AppendLine(string.Format("Log: '{0}'", Log));
+            sb.AppendLine(string.Format("CallingApp: '{0}'", CallingApp));
+	        return sb.ToString();
+	    }
 
         public void Parse(string[] args)
         {
