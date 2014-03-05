@@ -1,5 +1,5 @@
 # This is a quick port of NAppUpdate application to MONO environment.
-## Please find the oryginal description below.
+## Please find the original description below.
 
 NAppUpdate - An application auto-update framework for .NET
 
