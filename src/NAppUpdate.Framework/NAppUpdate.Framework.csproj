@@ -104,6 +104,7 @@
     <Compile Include="Utils\PermissionsCheck.cs" />
     <Compile Include="Utils\PlatformCheck.cs" />
     <Compile Include="Utils\Reflection.cs" />
+    <Compile Include="Utils\SslValidator.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">

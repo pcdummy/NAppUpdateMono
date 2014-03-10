@@ -14,13 +14,15 @@ namespace NAppUpdate.Framework.Sources
 		public SimpleWebSource()
 		{
 			Proxy = null;
-		}
+            SslValidator.OverrideValidation(); //download from https, even if there are no certs in mono/windows store
+        }
 
 		public SimpleWebSource(string feedUrl)
 		{
 			FeedUrl = feedUrl;
 			Proxy = null;
-		}
+            SslValidator.OverrideValidation(); //download from https, even if there are no certs in mono/windows store
+        }
 
 		#region IUpdateSource Members
 
