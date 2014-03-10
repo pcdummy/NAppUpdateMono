@@ -51,8 +51,9 @@ namespace NAppUpdate.Framework.Utils
             {
                 WriteDtoToFile(dto, paramsFileName);
             }
-            catch
+            catch (Exception e)
             {
+                Console.WriteLine("Writing params to temporary path failed: '{0}'", e);
                 if (File.Exists(paramsFileName))
                     File.Delete(paramsFileName);
                 return null;
@@ -96,7 +97,11 @@ namespace NAppUpdate.Framework.Utils
             object result;
             using (var fileStream = new FileStream(paramsFileName, FileMode.Open))
             {
-                result = new BinaryFormatter().Deserialize(fileStream);
+                var formatter = new BinaryFormatter
+                {
+                    Binder = new CarelessAssemblyDeserializationBinder()
+                };
+                result = formatter.Deserialize(fileStream);
             }
 
             File.Delete(paramsFileName);
