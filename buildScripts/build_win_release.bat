@@ -1,4 +1,4 @@
-SET PATH=%PATH%;"C:\Program Files (x86)\Mono-3.2.3\bin"
+SET PATH=%PATH%;"C:\Program Files (x86)\Mono-2.10.9\bin"
 
 REM building first time and moving NAppUpdate.Updater.exe to NAppUpdate.Framework.dll
 rmdir /S /Q .\..\src\NAppUpdate.Updater\bin\Debug
@@ -16,5 +16,10 @@ copy .\..\src\NAppUpdate.Updater\bin\Debug\updater.exe .\..\src\NAppUpdate.Frame
 REM building second time - final NAppUpdate.Framework build
 rmdir /S /Q .\..\src\NAppUpdate.Framework\bin\Debug
 call xbuild ./../NAppUpdate.sln /p:Configuration=Debug
+
+REM copy builded binary to bin_mono_compilant folder
+rmdir /S /Q .\..\bin_mono_compilant
+mkdir .\..\bin_mono_compilant
+copy .\..\src\NAppUpdate.Framework\bin\Debug\NAppUpdate.Framework.dll .\..\bin_mono_compilant\NAppUpdate.Framework.dll
 
 REM final - building application - adjust for your needs - see example in build_linux.sh

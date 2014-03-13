@@ -17,9 +17,12 @@ cp ./../src/NAppUpdate.Updater/bin/Debug/updater.exe ./../src/NAppUpdate.Framewo
 rm -rf ./../src/NAppUpdate.Framework/bin/Debug
 xbuild ./../NAppUpdate.sln /p:Configuration=Debug
 
+# copy builded binary to bin_mono_compilant folder
+rm -rf ./../bin_mono_compilant/*
+cp ./../src/NAppUpdate.Framework/bin/Debug/NAppUpdate.Framework.dll ./../bin_mono_compilant/NAppUpdate.Framework.dll
 # final - building application - adjust for your needs
-rm -rf ./../LinuxTest/bin/Debug
-xbuild ./../NAppUpdate.sln /p:Configuration=Debug # this is not required but made for clarity
-cd ./../LinuxTest/bin/Debug
-mkbundle --deps --static -z -L ./ LinuxTest.exe NAppUpdate.Framework.dll -o LinuxTest --machine-config /etc/mono/4.0/machine.config
-cd ./../../../buildScripts
+# rm -rf ./../LinuxTest/bin/Debug
+# xbuild ./../NAppUpdate.sln /p:Configuration=Debug # this is not required but made for clarity
+# cd ./../LinuxTest/bin/Debug
+# mkbundle --deps --static -z -L ./ LinuxTest.exe NAppUpdate.Framework.dll -o LinuxTest --machine-config /etc/mono/4.0/machine.config
+# cd ./../../../buildScripts
