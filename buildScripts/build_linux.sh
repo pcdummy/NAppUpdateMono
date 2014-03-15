@@ -36,6 +36,7 @@ xbuild ./../NAppUpdate.sln /p:Configuration=Debug
 
 # copy builded binary to bin_mono_compilant folder
 rm -rf ./../bin_mono_compilant/*
+mkdir ./../bin_mono_compilant
 cp ./../src/NAppUpdate.Framework/bin/Debug/NAppUpdate.Framework.dll ./../bin_mono_compilant/NAppUpdate.Framework.dll
 # final - building application - adjust for your needs
 # rm -rf ./../LinuxTest/bin/Debug
