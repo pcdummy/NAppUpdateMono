@@ -1,6 +1,14 @@
 # NOTE: this build script assumes that you have installed Mono and you want to build NAppUpdate library
 # which will not require mono installation on client machine
 
+if [ "$1" = "MacOSX" ]
+then
+	export AS="as -arch i386"
+	export CC="cc -arch i386"
+	# export PATH=/Library/Frameworks/Mono.framework/Commands/:$PATH
+	# export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/lib/pkgconfig:/Library/Frameworks/Mono.framework/Versions/Current/lib/pkgconfig
+fi
+
 # building first time and moving NAppUpdate.Updater.exe to NAppUpdate.Framework.dll
 rm -rf ./../src/NAppUpdate.Updater/bin/Debug
 rm -rf ./../src/NAppUpdate.Framework/Updater/* # delete previous updater
@@ -9,7 +17,16 @@ sleep 3s
 xbuild ./../NAppUpdate.sln /p:Configuration=Debug
 rm -rf ./../src/NAppUpdate.Framework/Updater/*
 cd ./../src/NAppUpdate.Updater/bin/Debug/
-mkbundle --deps --static -z -L ./ NAppUpdate.Updater.exe NAppUpdate.Framework.dll -o updater.exe --machine-config /etc/mono/4.0/machine.config
+
+if [ "$1" = "MacOSX" ]
+then
+	MachineConfigFileName="/Library/Frameworks/Mono.framework/Versions/Current/etc/mono/2.0/machine.config"
+else
+	MachineConfigFileName="/etc/mono/2.0/machine.config"
+fi
+
+mkbundle --deps --static -z -L ./ NAppUpdate.Updater.exe NAppUpdate.Framework.dll -o updater.exe --machine-config $MachineConfigFileName
+
 cd ./../../../../buildScripts
 cp ./../src/NAppUpdate.Updater/bin/Debug/updater.exe ./../src/NAppUpdate.Framework/Updater/updater.exe
 
