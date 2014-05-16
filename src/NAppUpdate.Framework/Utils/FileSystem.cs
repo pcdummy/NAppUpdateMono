@@ -23,7 +23,7 @@ namespace NAppUpdate.Framework.Utils
 
 			for (int ix = 0; ix < loopCount; ix++)
 			{
-				string newPath = paths[0] + @"\";
+                string newPath = paths[0] + Path.PathSeparator;
 				for (int add = 1; add <= ix; add++)
 					newPath = Path.Combine(newPath, paths[add]);
 				if (!Directory.Exists(newPath))
