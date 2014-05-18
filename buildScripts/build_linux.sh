@@ -1,5 +1,12 @@
 # NOTE: this build script assumes that you have installed Mono and you want to build NAppUpdate library
 # which will not require mono installation on client machine
+MY_PATH="`dirname \"$0\"`"              # relative
+MY_PATH="`( cd \"$MY_PATH\" && pwd )`"  # absolutized and normalized
+if [ -z "$MY_PATH" ] ; then
+  # error; for some reason, the path is not accessible
+  # to the script (e.g. permissions re-evaled after suid)
+  exit 1  # fail
+fi
 
 if [ "$1" = "MacOSX" ]
 then
@@ -9,38 +16,43 @@ then
 	# export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/lib/pkgconfig:/Library/Frameworks/Mono.framework/Versions/Current/lib/pkgconfig
 fi
 
+BUILD_CONFIG="Debug"
+if [ ! -z "$2" ]; then
+	BUILD_CONFIG="$2"
+fi
+
 # building first time and moving NAppUpdate.Updater.exe to NAppUpdate.Framework.dll
-rm -rf ./../src/NAppUpdate.Updater/bin/Debug
-rm -rf ./../src/NAppUpdate.Framework/Updater/* # delete previous updater
-touch ./../src/NAppUpdate.Framework/Updater/updater.exe
+rm -rf ${MY_PATH}/../src/NAppUpdate.Updater/bin/${BUILD_CONFIG}
+rm -f ${MY_PATH}/../src/NAppUpdate.Framework/Updater/updater.exe # delete previous updater
+touch ${MY_PATH}/../src/NAppUpdate.Framework/Updater/updater.exe
 sleep 3s
-xbuild ./../NAppUpdate.sln /p:Configuration=Debug
-rm -rf ./../src/NAppUpdate.Framework/Updater/*
-cd ./../src/NAppUpdate.Updater/bin/Debug/
+xbuild ${MY_PATH}/../NAppUpdate.sln /p:Configuration=${BUILD_CONFIG}
+rm -rf ${MY_PATH}/../src/NAppUpdate.Framework/Updater/*
+
 
 if [ "$1" = "MacOSX" ]
 then
 	MachineConfigFileName="/Library/Frameworks/Mono.framework/Versions/Current/etc/mono/2.0/machine.config"
 else
-	MachineConfigFileName="/etc/mono/2.0/machine.config"
+	MachineConfigFileName="/etc/mono/4.0/machine.config"
 fi
 
-mkbundle --deps --static -z -L ./ NAppUpdate.Updater.exe NAppUpdate.Framework.dll -o updater.exe --machine-config $MachineConfigFileName
+cd ${MY_PATH}/../src/NAppUpdate.Updater/bin/${BUILD_CONFIG}/
+mkbundle -z -L ./ NAppUpdate.Updater.exe NAppUpdate.Framework.dll -o updater.exe --machine-config ${MachineConfigFileName}
 
-cd ./../../../../buildScripts
-cp ./../src/NAppUpdate.Updater/bin/Debug/updater.exe ./../src/NAppUpdate.Framework/Updater/updater.exe
+cp ${MY_PATH}/../src/NAppUpdate.Updater/bin/${BUILD_CONFIG}/updater.exe ${MY_PATH}/../src/NAppUpdate.Framework/Updater/updater.exe
 
 # building second time - final NAppUpdate.Framework build
-rm -rf ./../src/NAppUpdate.Framework/bin/Debug
-xbuild ./../NAppUpdate.sln /p:Configuration=Debug
+rm -rf ${MY_PATH}/../src/NAppUpdate.Framework/bin/${BUILD_CONFIG}
+xbuild ${MY_PATH}/../NAppUpdate.sln /p:Configuration=${BUILD_CONFIG}
 
 # copy builded binary to bin_mono_compilant folder
-rm -rf ./../bin_mono_compilant/*
-mkdir ./../bin_mono_compilant
-cp ./../src/NAppUpdate.Framework/bin/Debug/NAppUpdate.Framework.dll ./../bin_mono_compilant/NAppUpdate.Framework.dll
+rm -rf ${MY_PATH}/../bin_mono_compilant/*
+mkdir ${MY_PATH}/../bin_mono_compilant
+cp ${MY_PATH}/../src/NAppUpdate.Framework/bin/${BUILD_CONFIG}/NAppUpdate.Framework.dll ${MY_PATH}/../bin_mono_compilant/NAppUpdate.Framework.dll
+
 # final - building application - adjust for your needs
-# rm -rf ./../LinuxTest/bin/Debug
-# xbuild ./../NAppUpdate.sln /p:Configuration=Debug # this is not required but made for clarity
-# cd ./../LinuxTest/bin/Debug
-# mkbundle --deps --static -z -L ./ LinuxTest.exe NAppUpdate.Framework.dll -o LinuxTest --machine-config /etc/mono/4.0/machine.config
-# cd ./../../../buildScripts
+#rm -rf ${MY_PATH}/../LinuxTest/bin/${BUILD_CONFIG}
+#xbuild ./../NAppUpdate.sln /p:Configuration=${BUILD_CONFIG} # this is not required but made for clarity
+cd ${MY_PATH}/../LinuxTest/bin/${BUILD_CONFIG}
+mkbundle -z -L ./ LinuxTest.exe NAppUpdate.Framework.dll -o LinuxTest --machine-config ${MachineConfigFileName}
