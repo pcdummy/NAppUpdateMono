@@ -124,8 +124,8 @@ namespace NAppUpdate.Framework.Utils
 
             // Now copy the NAU DLL
             var assemblyLocation = Directory.GetCurrentDirectory();
-            if (File.Exists(assemblyLocation)) //it does not exist when NAppUpdate.Framework.dll is statically linked and compiled into updater dll.
-                File.Copy(assemblyLocation, Path.Combine(updaterPath, "NAppUpdate.Framework.dll"), true);
+            if (File.Exists(Path.Combine(assemblyLocation, "NAppUpdate.Framework.dll"))) //it does not exist when NAppUpdate.Framework.dll is statically linked and compiled into updater dll.
+                File.Copy(Path.Combine(assemblyLocation, "NAppUpdate.Framework.dll"), Path.Combine(updaterPath, "NAppUpdate.Framework.dll"), true);
 
             // And also all other referenced DLLs (opt-in only)
             var assemblyPath = Path.GetDirectoryName(assemblyLocation) ?? string.Empty;
