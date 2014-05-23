@@ -19,6 +19,8 @@ namespace NAppUpdate.Framework.Tasks
 			set { _updateConditions = value; }
 		}
 
+        public bool IsUpdater { get; set; }
+
 		[field: NonSerialized]
 		public event ReportProgressDelegate ProgressDelegate;
 

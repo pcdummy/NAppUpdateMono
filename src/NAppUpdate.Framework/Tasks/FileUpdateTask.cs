@@ -45,7 +45,20 @@ namespace NAppUpdate.Framework.Tasks
 			_tempFile = null;
 
 			string baseUrl = UpdateManager.Instance.BaseUrl;
-			string tempFileLocal = Path.Combine(UpdateManager.Instance.Config.TempFolder, Guid.NewGuid().ToString());
+            string tempFileLocal;
+            if (IsUpdater)
+            {
+                if (fileName == "updater.exe")
+                {
+                    tempFileLocal = Path.Combine (UpdateManager.Instance.Config.TempFolder, UpdateManager.Instance.Config.UpdateExecutableName);
+                } else
+                {
+                    tempFileLocal = Path.Combine (UpdateManager.Instance.Config.TempFolder, fileName);
+                }
+            } else
+            {
+                tempFileLocal = Path.Combine (UpdateManager.Instance.Config.TempFolder, Guid.NewGuid ().ToString ());
+            }
 
 			UpdateManager.Instance.Logger.Log("FileUpdateTask: Downloading {0} with BaseUrl of {1} to {2}", fileName, baseUrl, tempFileLocal);
 
@@ -69,6 +82,11 @@ namespace NAppUpdate.Framework.Tasks
 
 		public override TaskExecutionStatus Execute(bool coldRun)
 		{
+            if (IsUpdater)
+            {
+                throw new UpdateProcessFailedException ("Can't Execute an Updater Task");
+            }
+
 			if (string.IsNullOrEmpty(LocalPath))
 			{
 				UpdateManager.Instance.Logger.Log(Logger.SeverityLevel.Warning, "FileUpdateTask: LocalPath is empty, task is a noop");

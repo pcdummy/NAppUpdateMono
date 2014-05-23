@@ -23,7 +23,7 @@ namespace LinuxTest
                 //    UpdateManager.Instance.CleanUp();
                 // UpdateManager initialization
                 UpdateManager updManager = UpdateManager.Instance;
-                updManager.UpdateSource = new SimpleWebSource("http://rauchfrei.mariaebene.at/downloads/NAU-Mono_LinuxTest/UpdateFeed.xml");
+                updManager.UpdateSource = new SimpleWebSource("http://rauchfrei.mariaebene.at/downloads/NAU-Mono_LinuxTest2/UpdateFeed.xml");
                 updManager.Config.TempFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "LinuxTest");
 
                 // If you don't call this method, the updater.exe will continually attempt to connect the named pipe and get stuck.

@@ -20,6 +20,7 @@ namespace NAppUpdate.Framework.Tasks
     {
     	string Description { get; set; }
         BooleanCondition UpdateConditions { get; set; }
+        bool IsUpdater { get; set; }
 		TaskExecutionStatus ExecutionStatus { get; set; }
 		event ReportProgressDelegate ProgressDelegate;
 
