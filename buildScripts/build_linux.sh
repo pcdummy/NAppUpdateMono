@@ -1,3 +1,11 @@
+# Copyright 2014 by the NAppUpdateMono Project.
+#
+# Usage:
+# /bin/bash build_linux.sh <MacOSX|Linux> <Debug|Release> <Static|Dynamic>
+#
+# For example:
+# /bin/bash build_linux.sh Linux Release Dynamic
+#
 # NOTE: this build script assumes that you have installed Mono and you want to build NAppUpdate library
 # which will not require mono installation on client machine
 MY_PATH="`dirname \"$0\"`"              # relative
@@ -21,6 +29,11 @@ if [ ! -z "$2" ]; then
 	BUILD_CONFIG="$2"
 fi
 
+STATIC_BUILD="true"
+if [ ! -z "$3" -a "$3" = "Dynamic" ]; then
+	STATIC_BUILD="false"
+fi
+
 # building first time and moving NAppUpdate.Updater.exe to NAppUpdate.Framework.dll
 rm -rf ${MY_PATH}/../src/NAppUpdate.Updater/bin/${BUILD_CONFIG}
 rm -f ${MY_PATH}/../src/NAppUpdate.Framework/Updater/updater.exe # delete previous updater
@@ -38,7 +51,11 @@ else
 fi
 
 cd ${MY_PATH}/../src/NAppUpdate.Updater/bin/${BUILD_CONFIG}/
-mkbundle -z -L ./ NAppUpdate.Updater.exe NAppUpdate.Framework.dll -o updater.exe --machine-config ${MachineConfigFileName}
+if [ "${STATIC_BUILD}" = "true" ]; then
+	mkbundle --static --deps -z -L ./ NAppUpdate.Updater.exe NAppUpdate.Framework.dll -o updater.exe --machine-config ${MachineConfigFileName}
+else
+	mkbundle -z -L ./ NAppUpdate.Updater.exe NAppUpdate.Framework.dll -o updater.exe --machine-config ${MachineConfigFileName}
+fi
 
 cp ${MY_PATH}/../src/NAppUpdate.Updater/bin/${BUILD_CONFIG}/updater.exe ${MY_PATH}/../src/NAppUpdate.Framework/Updater/updater.exe
 
@@ -55,4 +72,8 @@ cp ${MY_PATH}/../src/NAppUpdate.Framework/bin/${BUILD_CONFIG}/NAppUpdate.Framewo
 #rm -rf ${MY_PATH}/../LinuxTest/bin/${BUILD_CONFIG}
 #xbuild ./../NAppUpdate.sln /p:Configuration=${BUILD_CONFIG} # this is not required but made for clarity
 cd ${MY_PATH}/../LinuxTest/bin/${BUILD_CONFIG}
-mkbundle -z -L ./ LinuxTest.exe NAppUpdate.Framework.dll -o LinuxTest --machine-config ${MachineConfigFileName}
+if [ "${STATIC_BUILD}" = "true" ]; then
+	mkbundle --static --deps -z -L ./ LinuxTest.exe NAppUpdate.Framework.dll -o LinuxTest --machine-config ${MachineConfigFileName}
+else
+	mkbundle -z -L ./ LinuxTest.exe NAppUpdate.Framework.dll -o LinuxTest --machine-config ${MachineConfigFileName}
+fi
