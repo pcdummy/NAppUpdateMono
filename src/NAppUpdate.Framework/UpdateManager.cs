@@ -27,7 +27,7 @@ namespace NAppUpdate.Framework
 			State = UpdateProcessState.NotChecked;
 			UpdatesToApply = new List<IUpdateTask>();
             UpdaterTasks = new List<IUpdateTask>();
-			ApplicationPath = Process.GetCurrentProcess().MainModule.FileName;
+            ApplicationPath = Path.GetFullPath (Process.GetCurrentProcess().MainModule.FileName);
 			UpdateFeedReader = new NauXmlFeedReader();
 			Logger = new Logger();
 
@@ -146,6 +146,9 @@ namespace NAppUpdate.Framework
 		{
 			if (IsWorking)
 				throw new InvalidOperationException("Another update process is already in progress");
+
+            // Set the CWD to the Applications path, for the Condition checkers.
+            Environment.CurrentDirectory = Path.GetDirectoryName (ApplicationPath);
 			
 			using (WorkScope.New(isWorking => IsWorking = isWorking))
 			{
