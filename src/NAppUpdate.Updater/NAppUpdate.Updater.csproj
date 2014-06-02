@@ -8,7 +8,6 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NAppUpdate.Updater</RootNamespace>
     <AssemblyName>NAppUpdate.Updater</AssemblyName>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <WarningLevel>4</WarningLevel>
     <ApplicationIcon>updateicon.ico</ApplicationIcon>
