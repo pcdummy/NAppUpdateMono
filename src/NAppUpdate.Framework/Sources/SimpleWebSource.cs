@@ -32,7 +32,11 @@ namespace NAppUpdate.Framework.Sources
 
 			var request = WebRequest.Create(FeedUrl);
 			request.Method = "GET";
-			request.Proxy = Proxy;
+            if (Proxy != null)
+            {
+                request.Proxy = Proxy;
+            }
+
 			using (var response = request.GetResponse())
 			{
 				var stream = response.GetResponseStream();
@@ -60,7 +64,7 @@ namespace NAppUpdate.Framework.Sources
 			else
 				fd = string.IsNullOrEmpty(baseUrl) ? new FileDownloader(url) : new FileDownloader(new Uri(new Uri(baseUrl), url));
 
-			fd.Proxy = Proxy;
+            fd.Proxy = Proxy;
 
 			if (string.IsNullOrEmpty(tempLocation) || !Directory.Exists(Path.GetDirectoryName(tempLocation)))
 				// WATCHOUT!!! Files downloaded to a path specified by GetTempFileName may be deleted on
