@@ -49,6 +49,7 @@ namespace NAppUpdate.Framework.FeedReaders
                     continue;
 
                 IUpdateTask task = (IUpdateTask)Activator.CreateInstance(_updateTasks[node.Name]);
+                task.IsUpdater = false;
 
                 // Store all other task attributes, to be used by the task object later
                 if (node.Attributes != null)
@@ -93,6 +94,44 @@ namespace NAppUpdate.Framework.FeedReaders
 
                 ret.Add(task);
             }
+
+            XmlNodeList updNl = root.SelectNodes("./Updater/*");
+            foreach (XmlNode node in updNl)
+            {
+                // Find the requested task type and create a new instance of it
+                if (!_updateTasks.ContainsKey (node.Name))
+                    continue;
+
+                IUpdateTask task = (IUpdateTask)Activator.CreateInstance (_updateTasks [node.Name]);
+                task.IsUpdater = true;
+
+                // Store all other task attributes, to be used by the task object later
+                if (node.Attributes != null)
+                {
+                    foreach (XmlAttribute att in node.Attributes)
+                    {
+                        if ("type".Equals (att.Name))
+                            continue;
+
+                        attributes.Add (att.Name, att.Value);
+                    }
+                    if (attributes.Count > 0)
+                    {
+                        Utils.Reflection.SetNauAttributes (task, attributes);
+                        attributes.Clear ();
+                    }
+                    // TODO: Check to see if all required task fields have been set
+                }
+
+                if (node.HasChildNodes)
+                {
+                    if (node ["Description"] != null)
+                        task.Description = node ["Description"].InnerText;
+                }
+
+                ret.Add(task);
+            }
+
             return ret;
         }
 

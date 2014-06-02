@@ -42,7 +42,10 @@ namespace NAppUpdate.Framework.Utils
 		public bool DownloadToFile(string tempLocation, Action<UpdateProgressInfo> onProgress)
 		{
 			var request = WebRequest.Create(_uri);
-			request.Proxy = Proxy;
+            if (Proxy != null)
+            {
+                request.Proxy = Proxy;
+            }
 
 			using (var response = request.GetResponse())
 			using (var tempFile = File.Create(tempLocation))

@@ -30,7 +30,7 @@ namespace NAppUpdate.Framework.Conditions
             if ("sha256".Equals(ChecksumType, StringComparison.InvariantCultureIgnoreCase))
             {
                 string sha256 = Utils.FileChecksum.GetSHA256Checksum(localPath);
-                if (!string.IsNullOrEmpty(sha256) && sha256.Equals(Checksum, StringComparison.InvariantCultureIgnoreCase))
+                if (!string.IsNullOrEmpty(sha256) && sha256.Equals(Checksum.ToUpper()))
                     return true;
             }
 

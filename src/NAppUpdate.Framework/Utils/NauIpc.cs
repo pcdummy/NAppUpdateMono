@@ -90,57 +90,22 @@ namespace NAppUpdate.Framework.Utils
 
         internal static object ReadDto(string syncProcessName)
         {
-            var paramsFileName = GetAdditionalParamsFileName(syncProcessName);
-            if (!File.Exists(paramsFileName))
+            var paramsFileName = GetAdditionalParamsFileName (syncProcessName);
+            if (!File.Exists (paramsFileName))
                 return null;
 
             object result;
-            using (var fileStream = new FileStream(paramsFileName, FileMode.Open))
+            using (var fileStream = new FileStream (paramsFileName, FileMode.Open))
             {
-                var formatter = new BinaryFormatter
-                {
-                    Binder = new CarelessAssemblyDeserializationBinder()
+                var formatter = new BinaryFormatter {
+                    Binder = new CarelessAssemblyDeserializationBinder ()
                 };
-                result = formatter.Deserialize(fileStream);
+                result = formatter.Deserialize (fileStream);
             }
 
-            File.Delete(paramsFileName);
+            File.Delete (paramsFileName);
 
             return result;
-        }
-
-        internal static void ExtractUpdaterFromResource(string updaterPath, string hostExeName)
-        {
-            if (!Directory.Exists(updaterPath))
-                Directory.CreateDirectory(updaterPath);
-
-            //store the updater temporarily in the designated folder
-            using (var updaterFile = File.Open(Path.Combine(updaterPath, hostExeName), FileMode.Create))
-            {
-                using (var writer = new BinaryWriter(updaterFile))
-                    writer.Write(Resources.updater);
-            }
-
-
-            // Now copy the NAU DLL
-            var assemblyLocation = Directory.GetCurrentDirectory();
-            if (File.Exists(Path.Combine(assemblyLocation, "NAppUpdate.Framework.dll"))) //it does not exist when NAppUpdate.Framework.dll is statically linked and compiled into updater dll.
-                File.Copy(Path.Combine(assemblyLocation, "NAppUpdate.Framework.dll"), Path.Combine(updaterPath, "NAppUpdate.Framework.dll"), true);
-
-            // And also all other referenced DLLs (opt-in only)
-            var assemblyPath = Path.GetDirectoryName(assemblyLocation) ?? string.Empty;
-            if (UpdateManager.Instance.Config.DependenciesForColdUpdate == null) return;
-            // TODO Maybe we can back this up with typeof(UpdateStarter).Assembly.GetReferencedAssemblies()
-
-            foreach (var dep in UpdateManager.Instance.Config.DependenciesForColdUpdate)
-            {
-                var fullPath = Path.Combine(assemblyPath, dep);
-                if (!File.Exists(fullPath)) continue;
-
-                var dest = Path.Combine(updaterPath, dep);
-                FileSystem.CreateDirectoryStructure(dest);
-                File.Copy(fullPath, Path.Combine(updaterPath, dep), true);
-            }
         }
     }
 }

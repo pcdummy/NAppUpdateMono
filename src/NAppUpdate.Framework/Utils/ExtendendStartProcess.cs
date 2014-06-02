@@ -7,8 +7,16 @@ namespace NAppUpdate.Framework.Utils
     {
         public static Process Start(ProcessStartInfo processStartInfo)
         {
-            if (!PlatformCheck.CurrentlyRunningInWindows())
-                MakeFileRunnable(processStartInfo);
+            if (!PlatformCheck.CurrentlyRunningInWindows ())
+            {
+                MakeFileRunnable (processStartInfo);
+
+                if (processStartInfo.FileName.ToLower ().EndsWith (".exe"))
+                {
+                    processStartInfo.Arguments = string.Format ("{0} {1}", processStartInfo.FileName, processStartInfo.Arguments);
+                    processStartInfo.FileName = "cli"; // TODO: Make this to work on Mac OS-X;
+                }
+            }
 
             return Process.Start(processStartInfo);
         }

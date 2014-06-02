@@ -26,7 +26,8 @@ namespace NAppUpdate.Framework
 			IsWorking = false;
 			State = UpdateProcessState.NotChecked;
 			UpdatesToApply = new List<IUpdateTask>();
-			ApplicationPath = Process.GetCurrentProcess().MainModule.FileName;
+            UpdaterTasks = new List<IUpdateTask>();
+            ApplicationPath = Path.GetFullPath (Process.GetCurrentProcess().MainModule.FileName);
 			UpdateFeedReader = new NauXmlFeedReader();
 			Logger = new Logger();
 
@@ -92,6 +93,7 @@ namespace NAppUpdate.Framework
 
 		internal string BaseUrl { get; set; }
 		internal IList<IUpdateTask> UpdatesToApply { get; private set; }
+        internal IList<IUpdateTask> UpdaterTasks { get; private set; }
 		public int UpdatesAvailable { get { return UpdatesToApply == null ? 0 : UpdatesToApply.Count; } }
 		public UpdateProcessState State { get; private set; }
 
@@ -144,6 +146,9 @@ namespace NAppUpdate.Framework
 		{
 			if (IsWorking)
 				throw new InvalidOperationException("Another update process is already in progress");
+
+            // Set the CWD to the Applications path, for the Condition checkers.
+            Environment.CurrentDirectory = Path.GetDirectoryName (ApplicationPath);
 			
 			using (WorkScope.New(isWorking => IsWorking = isWorking))
 			{
@@ -159,14 +164,21 @@ namespace NAppUpdate.Framework
 				lock (UpdatesToApply)
 				{
 					UpdatesToApply.Clear();
+                    UpdaterTasks.Clear ();
+
 					var tasks = UpdateFeedReader.Read(source.GetUpdatesFeed());
 					foreach (var t in tasks)
 					{
 						if (ShouldStop)
 							throw new UserAbortException();
 
-						if (t.UpdateConditions == null || t.UpdateConditions.IsMet(t)) // Only execute if all conditions are met
-							UpdatesToApply.Add(t);
+                        if (t.IsUpdater)
+                        {
+                            UpdaterTasks.Add (t);
+                        } else if (t.UpdateConditions == null || t.UpdateConditions.IsMet (t)) // Only execute if all conditions are met
+                        { 
+                            UpdatesToApply.Add (t);
+                        }
 					}
 				}
 
@@ -257,6 +269,28 @@ namespace NAppUpdate.Framework
 					{
 						Logger.Log("Using existing Temp directory {0}", Config.TempFolder);
 					}
+
+                    foreach (var task in UpdaterTasks)
+                    {
+                        if (ShouldStop)
+                            throw new UserAbortException();
+
+                        var t = task;
+                        task.ProgressDelegate += status => TaskProgressCallback(status, t);
+
+                        try
+                        {
+                            task.Prepare(UpdateSource);
+                        }
+                        catch (Exception ex)
+                        {
+                            task.ExecutionStatus = TaskExecutionStatus.FailedToPrepare;
+                            Logger.Log(ex);
+                            throw new UpdateProcessFailedException("Failed to prepare task: " + task.Description, ex);
+                        }
+
+                        task.ExecutionStatus = TaskExecutionStatus.Successful;
+                    }
 
 					foreach (var task in UpdatesToApply)
 					{
@@ -469,7 +503,7 @@ namespace NAppUpdate.Framework
 						          		LogItems = Logger.LogItems,
 						          	};
 
-						NauIpc.ExtractUpdaterFromResource(Config.TempFolder, Instance.Config.UpdateExecutableName);
+                        // NauIpc.ExtractUpdaterFromResource(Config.TempFolder, Instance.Config.UpdateExecutableName);
 
 						var info = new ProcessStartInfo
 						           	{
