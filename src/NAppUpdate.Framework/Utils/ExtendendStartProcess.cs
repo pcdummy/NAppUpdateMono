@@ -14,7 +14,7 @@ namespace NAppUpdate.Framework.Utils
                 if (processStartInfo.FileName.ToLower ().EndsWith (".exe"))
                 {
                     processStartInfo.Arguments = string.Format ("{0} {1}", processStartInfo.FileName, processStartInfo.Arguments);
-                    processStartInfo.FileName = "/usr/bin/cli"; // TODO: Make this to work on Mac OS-X;
+                    processStartInfo.FileName = "cli"; // TODO: Make this to work on Mac OS-X;
                 }
             }
 
